@@ -1,14 +1,30 @@
 # base node image
-FROM node:16-bullseye-slim as base
+FROM node:16-alpine as base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
 
 # Install openssl for Prisma
-RUN apt-get update && apt-get install -y openssl
+RUN apk update && apk add --update openssl
+
+
+RUN apk add --update python3 make g++\
+   && rm -rf /var/cache/apk/*
+
 
 # Install all node_modules, including dev dependencies
 FROM base as deps
+
+ENV CHROME_BIN="/usr/bin/chromium-browser" \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
+
+RUN set -x \
+    && apk update \
+    && apk upgrade \
+    && apk add --no-cache \
+    udev \
+    ttf-freefont \
+    chromium
 
 WORKDIR /myapp
 

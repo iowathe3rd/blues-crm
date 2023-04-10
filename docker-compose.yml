@@ -1,5 +1,19 @@
 version: "3.7"
 services:
+  app:
+    container_name: app
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    env_file:
+      - .env.docker
   postgres:
     image: postgres:latest
     restart: always
@@ -11,3 +25,7 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"

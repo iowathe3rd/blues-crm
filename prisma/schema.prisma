@@ -1,38 +1,62 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model User {
-  id    String @id @default(cuid())
-  email String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  password Password?
-  notes    Note[]
+  //Системная информация
+  id           String              @id @default(uuid())
+  createdAt    DateTime            @default(now())
+  //ФИО
+  firstName    String
+  lastName     String
+  surName      String
+  passwordHash String
+  //Прочее
+  email        String              @unique
+  phoneNumber  String?             @unique
+  workPlace    String?
+  courses      ListenersOnCourse[]
+  role         Roles               @default(USER)
 }
 
-model Password {
-  hash String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+model Course {
+  //Системная информация
+  id              String              @id @default(uuid())
+  assignedAt      DateTime            @default(now())
+  //Название, длительность, баллы, автор и слушатели
+  title           String
+  hoursCount      Int
+  authorFirstName String
+  authorLastName  String
+  authorSurName   String
+  listeners       ListenersOnCourse[]
+  minimumScore    Int
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+model ListenersOnCourse {
+  id                   String   @id @default(uuid())
+  course               Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  courseId             String
+  listener             User     @relation(fields: [listenerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  listenerId           String
+  certificateAvailable Boolean
+  assignedAt           DateTime @default(now())
+  score                Int
+  paymentInfo          String
+  finished             DateTime
+  duration             String
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+enum Roles {
+  USER
+  ADMIN
+  SUPER_ADMIN
 }

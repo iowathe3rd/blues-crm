@@ -95,3 +95,9 @@ export async function logout(request: Request) {
     },
   });
 }
+
+export async function accessLevel(role: Array<string>, request: Request) {
+  const sessionData = await getSession(request);
+  const sessionRole = sessionData.get("role");
+  return sessionData && sessionRole.includes(sessionRole);
+}
