@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs, V2_MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import { Form, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 
 import { verifyLogin } from "~/models/user.server";
@@ -84,7 +84,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              Email address
+              Email
             </label>
             <div className="mt-1">
               <input
@@ -112,7 +112,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              Пароль
             </label>
             <div className="mt-1">
               <input
@@ -135,7 +135,7 @@ export default function LoginPage() {
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <button type="submit" className="btn-primary btn-block btn">
-            Log in
+            Войти
           </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -149,21 +149,21 @@ export default function LoginPage() {
                 htmlFor="remember"
                 className="ml-2 block text-sm text-gray-900"
               >
-                Remember me
+                Запомнить меня
               </label>
             </div>
-            <div className="text-center text-sm text-gray-500">
-              Don't have an account?{" "}
-              <Link
-                className="text-blue-500 underline"
-                to={{
-                  pathname: "/join",
-                  search: searchParams.toString(),
-                }}
-              >
-                Sign up
-              </Link>
-            </div>
+            {/*<div className="text-center text-sm text-gray-500">*/}
+            {/*  Don't have an account?{" "}*/}
+            {/*  <Link*/}
+            {/*    className="text-blue-500 underline"*/}
+            {/*    to={{*/}
+            {/*      pathname: "/join",*/}
+            {/*      search: searchParams.toString(),*/}
+            {/*    }}*/}
+            {/*  >*/}
+            {/*    Sign up*/}
+            {/*  </Link>*/}
+            {/*</div>*/}
           </div>
         </Form>
       </div>

@@ -31,12 +31,12 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   });
   const settings = await getCertificateSettings();
   if (!settings) return new Error("SETTiNGS NOt SEtTED");
-  const { BASE_PATH } = process.env;
-  return json({ settings, data, isAdmin, BASE_PATH });
+  const { HOME_URL } = process.env;
+  return json({ settings, data, isAdmin, HOME_URL });
 };
 
 const CertificateIndex = () => {
-  const { settings, data, isAdmin, BASE_PATH } = useLoaderData<typeof loader>();
+  const { settings, data, isAdmin, HOME_URL } = useLoaderData<typeof loader>();
   console.log(settings);
   const { state } = useNavigation();
   if (state === "loading") {
@@ -85,7 +85,7 @@ const CertificateIndex = () => {
         courseName={data.course.title}
         listenerData={data.listener}
         assignedAt={data.finished}
-        basePath={BASE_PATH}
+        basePath={HOME_URL}
       />
     </div>
   );

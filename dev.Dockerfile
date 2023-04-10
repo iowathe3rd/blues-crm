@@ -1,14 +1,16 @@
-# Base Node.js image
-FROM node:16-bullseye-slim as base
+# base node image
+FROM node:16-alpine as base
 
-# Set environment variable for production
+# set for base and all layer that inherit from it
 ENV NODE_ENV production
 
 # Install openssl for Prisma
-RUN apt-get update && apt-get install -y openssl
+RUN apk update && apk add --update openssl
 
-RUN apt-get update && apt-get install -y python3 make g++ \
-  && rm -rf /var/lib/apt/lists/*
+
+RUN apk add --update python3 make g++\
+   && rm -rf /var/cache/apk/*
+
 
 # Install all node_modules, including dev dependencies
 FROM base as deps
@@ -17,16 +19,16 @@ ENV CHROME_BIN="/usr/bin/chromium-browser" \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
 
 RUN set -x \
-    && apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y \
+    && apk update \
+    && apk upgrade \
+    && apk add --no-cache \
     udev \
-    fonts-freefont-ttf \
+    ttf-freefont \
     chromium
 
 WORKDIR /myapp
 
-COPY package.json .npmrc ./
+ADD package.json .npmrc ./
 RUN npm install --production=false
 
 # Setup production node_modules
@@ -35,8 +37,8 @@ FROM base as production-deps
 WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
-COPY package.json .npmrc ./
-RUN npm prune --production
+ADD package.json .npmrc ./
+#RUN npm prune --production
 
 # Build the app
 FROM base as build
@@ -48,7 +50,7 @@ COPY --from=deps /myapp/node_modules /myapp/node_modules
 ADD prisma .
 RUN npx prisma generate
 
-COPY . .
+ADD . .
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
@@ -61,6 +63,6 @@ COPY --from=build /myapp/node_modules/.prisma /myapp/node_modules/.prisma
 
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
-COPY . .
+ADD . .
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
