@@ -18,7 +18,6 @@ const Card: React.FC<CardProps> = ({
   width = "max-w-md",
   shadow = "shadow-xl",
 }) => {
-
   return (
     <div className={`card ${width} w-full bg-base-100 ${shadow}`}>
       <div className="card-body">

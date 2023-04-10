@@ -11,7 +11,7 @@ node_modules
 /public/build
 .env
 .env.docker
-
+/prisma/seed.ts
 /cypress/screenshots
 /cypress/videos
 /postgres-data

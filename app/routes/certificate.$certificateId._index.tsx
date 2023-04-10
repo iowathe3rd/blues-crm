@@ -1,11 +1,8 @@
 import React from "react";
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-
-import { Link, Outlet, useLoaderData, useNavigation } from "@remix-run/react";
-
+import { Link, useLoaderData, useNavigation } from "@remix-run/react";
 import EmptyLayout from "~/layouts/emptyLayout";
-
 import { prisma } from "~/db.server";
 import Spinner from "~/components/spinner";
 import { getCertificateSettings } from "~/models/settings.server";
@@ -67,17 +64,28 @@ const CertificateIndex = () => {
       </EmptyLayout>
     );
   }
+
+  function startSpinner() {
+    return (
+      <EmptyLayout>
+        <Spinner />
+      </EmptyLayout>
+    );
+  }
+
   return (
     <div>
-      <div className={"flex flex-col items-center"}>
+      <div className={"certificate-pdf-link flex flex-col items-center"}>
         <div className={"flex items-center justify-center gap-2"}>
-          <Link to={"pdf"} className={"btn-primary btn"} reloadDocument>
+          <Link
+            to={"pdf"}
+            className={"btn-primary btn"}
+            reloadDocument
+            onClick={() => startSpinner()}
+          >
             Посмотреть как pdf
           </Link>
         </div>
-      </div>
-      <div>
-        <Outlet />
       </div>
       <Certificate
         id={data.id}

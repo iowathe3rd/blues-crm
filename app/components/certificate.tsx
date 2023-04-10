@@ -1,5 +1,6 @@
 import React from "react";
 import { QRCodeCanvas } from "qrcode.react";
+
 type CertificateProps = {
   settings: any;
   id: string;
@@ -102,7 +103,7 @@ const Certificate: React.FC<CertificateProps> = ({
           </div>
           <div className={"certificate-header-section2 flex flex-row-reverse"}>
             <QRCodeCanvas
-              value={`${basePath}/dashboard/results/${id}/pdf`}
+              value={`${basePath}/certificate/${id}/pdf`}
               size={65}
             />
             <img

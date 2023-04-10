@@ -21,7 +21,7 @@ const TableHead: React.FC<TableHeadProps> = ({
   const [sortField, setSortField] = useState<string>("");
   const [order, setOrder] = useState<string>("asc");
 
-  const handleSortingChange = (accessor: string): void=> {
+  const handleSortingChange = (accessor: string): void => {
     const sortOrder =
       accessor === sortField && order === "asc" ? "desc" : "asc";
     setSortField(accessor);
@@ -36,7 +36,9 @@ const TableHead: React.FC<TableHeadProps> = ({
           return (
             <th
               key={accessor}
-              onClick={sortable ? () => handleSortingChange(accessor): undefined}
+              onClick={
+                sortable ? () => handleSortingChange(accessor) : undefined
+              }
             >
               <span className={"flex items-center justify-start gap-2"}>
                 {label}

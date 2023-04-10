@@ -15,26 +15,6 @@ async function seed() {
       email: email,
       passwordHash: hashedPassword,
       role: "SUPER_ADMIN",
-      courses: {
-        create: {
-          score: 900,
-          paymentInfo:
-            "https://ympyxgbyyltbvljdxild.supabase.co/storage/v1/object/public/main/0e5e8ca4-2a06-455f-8603-87115ff1fc39.06.34.33.png",
-          certificateAvailable: true,
-          finished: new Date(Date.now()),
-          duration: Date.now().toString(),
-          course: {
-            create: {
-              title: "курс по робототехнике",
-              hoursCount: 190,
-              minimumScore: 90,
-              authorFirstName: "Бауржан",
-              authorLastName: "Беглеров",
-              authorSurName: "Серикович",
-            },
-          },
-        },
-      },
     },
   });
 }
