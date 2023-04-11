@@ -45,7 +45,7 @@ export default async function printCertificate(path: string) {
       "--use-gl=swiftshader",
       "--use-mock-keychain",
     ],
-    // executablePath: String(process.env.CHROME_BIN)
+    executablePath: String(process.env.CHROME_BIN)
   };
   const browser = await puppeteer.launch(options);
   const page = await browser.newPage();

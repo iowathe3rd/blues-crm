@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 
-import { verifyLogin } from "~/models/user.server";
+import { getUserByEmail, verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
@@ -37,6 +37,19 @@ export const action = async ({ request }: ActionArgs) => {
   if (password.length < 8) {
     return json(
       { errors: { email: null, password: "Password is too short" } },
+      { status: 400 }
+    );
+  }
+
+  const existingUser = await getUserByEmail(email);
+  if (!existingUser || existingUser.role === "USER") {
+    return json(
+      {
+        errors: {
+          email: "Админ с данным email не найден",
+          password: null,
+        },
+      },
       { status: 400 }
     );
   }

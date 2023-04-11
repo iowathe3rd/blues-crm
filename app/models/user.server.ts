@@ -10,7 +10,15 @@ export async function getUserById(id: User["id"]) {
 }
 
 export async function getUserByEmail(email: User["email"]) {
-  return prisma.user.findUnique({ where: { email } });
+  return await prisma.user.findUnique({
+    where: {
+      email,
+    },
+    select: {
+      role: true,
+      email: true,
+    },
+  });
 }
 //
 export async function createUser(email: User["email"], password: string) {

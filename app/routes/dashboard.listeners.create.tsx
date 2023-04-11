@@ -1,12 +1,17 @@
 import React from "react";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from "@remix-run/react";
 import EmptyLayout from "~/layouts/emptyLayout";
 import type {
   ActionArgs,
   ActionFunction,
   LoaderFunction,
 } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { badRequest } from "~/utils/request.server";
 import { validatePhoneNumber, validateString } from "~/utils/validate.server";
 import { prisma } from "~/db.server";
@@ -25,6 +30,8 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
   const phoneNumber = form.get("phoneNumber");
   const workPlace = form.get("workPlace");
   const password = form.get("password");
+  const role = form.get("role");
+  console.log(role);
   const passwordSimilarity = form.get("passwordSimilarity");
   const fields = {
     firstName,
@@ -84,6 +91,7 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
       email,
       phoneNumber,
       workPlace,
+      role: role === "on" ? "ADMIN" : "USER",
       passwordHash: hashedPassword,
     },
   });
@@ -97,12 +105,21 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireUserId(request);
-  return null;
+  const userId = await requireUserId(request);
+  const userRole = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+  return json({ userId, userRole });
 };
 
 const CreateUserPage: React.FC = () => {
   const actionData = useActionData();
+  const loaderData = useLoaderData();
   const { state } = useNavigation();
   if (state === "submitting") {
     return (
@@ -208,6 +225,18 @@ const CreateUserPage: React.FC = () => {
             type={"password"}
             name={"passwordSimilarity"}
           />
+          {loaderData.userRole === "SUPER_ADMIN" && (
+            <div>
+              <div className="divider"></div>
+              <div className="form-control">
+                <label className="label cursor-pointer">
+                  <span className="label-text">Админ</span>
+                  <input type="checkbox" name={"role"} className="toggle" />
+                </label>
+              </div>
+            </div>
+          )}
+          <div className="divider"></div>
           <div id="form-error-message">
             {actionData?.formError ? (
               <div className="alert alert-error shadow-lg">
