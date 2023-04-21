@@ -34,7 +34,7 @@ export const loader: LoaderFunction = async () => {
   if (!settings) {
     await setDefaultSettings();
     // @ts-ignore
-    settings = JSON.parse(await getCertificateSettings());
+    settings = await getCertificateSettings();
     return json({ settings });
   }
   settings = JSON.parse(settings);

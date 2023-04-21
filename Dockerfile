@@ -25,7 +25,6 @@ WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 COPY package.json .npmrc ./
-RUN npm prune --production
 
 # Build the app
 FROM base as build
@@ -63,5 +62,6 @@ RUN set -x \
     udev \
     ttf-freefont \
     chromium
+
 
 CMD ["npm", "start"]
