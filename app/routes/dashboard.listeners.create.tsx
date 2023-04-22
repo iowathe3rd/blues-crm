@@ -111,6 +111,18 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
       },
     });
   }
+  user = await prisma.user.create({
+    data: {
+      firstName,
+      lastName,
+      surName,
+      email,
+      phoneNumber,
+      workPlace,
+      role: role === "on" ? "ADMIN" : "USER",
+    },
+  });
+
   if (!user)
     return badRequest({
       fields,
