@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   useActionData,
@@ -13,7 +13,12 @@ import type {
 } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { badRequest } from "~/utils/request.server";
-import { validatePhoneNumber, validateString } from "~/utils/validate.server";
+import {
+  validatePassword,
+  validatePasswordSimilarity,
+  validatePhoneNumber,
+  validateString
+} from "~/utils/validate.server";
 import { prisma } from "~/db.server";
 import { requireUserId } from "~/session.server";
 import Spinner from "~/components/spinner";
@@ -29,19 +34,20 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
   const email = form.get("email");
   const phoneNumber = form.get("phoneNumber");
   const workPlace = form.get("workPlace");
-  const password = form.get("password");
   const role = form.get("role");
-  console.log(role);
-  const passwordSimilarity = form.get("passwordSimilarity");
-  const fields = {
+  const password = form.get("password") as string;
+  const passwordSimilarity = form.get("passwordSimilarity") as string;
+  let fields: object;
+  let fieldErrors: object;
+
+  fields = {
     firstName,
     lastName,
     surName,
     email,
     phoneNumber,
     workPlace,
-    password,
-  };
+  }
 
   if (
     typeof firstName !== "string" ||
@@ -49,8 +55,7 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
     typeof surName !== "string" ||
     typeof email !== "string" ||
     typeof phoneNumber !== "string" ||
-    typeof workPlace !== "string" ||
-    typeof password !== "string"
+    typeof workPlace !== "string"
   ) {
     //Отправка ответа с ошибками
     return badRequest({
@@ -59,7 +64,7 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
     });
   }
 
-  const fieldErrors = {
+  fieldErrors = {
     firstName: validateString(firstName),
     lastName: validateString(lastName),
     surName: validateString(surName),
@@ -68,11 +73,19 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
     workPlace: validateString(workPlace),
   };
 
-  if (password !== passwordSimilarity)
-    return badRequest({
-      fields,
-      formError: `Пароли не сходятся`,
-    });
+
+  if(role === "on"){
+    fieldErrors = {
+      firstName: validateString(firstName),
+      lastName: validateString(lastName),
+      surName: validateString(surName),
+      email: validateString(email),
+      phoneNumber: validatePhoneNumber(phoneNumber),
+      workPlace: validateString(workPlace),
+      password: validatePassword(password),
+      passwordSimilarity: validatePasswordSimilarity(password, passwordSimilarity),
+    }
+  }
 
   if (Object.values(fieldErrors).some(Boolean)) {
     return badRequest({
@@ -82,19 +95,22 @@ export const action: ActionFunction = async ({ request }: ActionArgs) => {
     });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: {
-      firstName,
-      lastName,
-      surName,
-      email,
-      phoneNumber,
-      workPlace,
-      role: role === "on" ? "ADMIN" : "USER",
-      passwordHash: hashedPassword,
-    },
-  });
+  let user;
+  if(role === "on"){
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        surName,
+        email,
+        phoneNumber,
+        workPlace,
+        role: role === "on" ? "ADMIN" : "USER",
+        passwordHash: hashedPassword,
+      },
+    });
+  }
   if (!user)
     return badRequest({
       fields,
@@ -121,6 +137,7 @@ const CreateUserPage: React.FC = () => {
   const actionData = useActionData();
   const loaderData = useLoaderData();
   const { state } = useNavigation();
+  const [isAdmin, setAdmin] = useState<boolean>(false)
   if (state === "submitting") {
     return (
       <EmptyLayout>
@@ -134,6 +151,12 @@ const CreateUserPage: React.FC = () => {
       </EmptyLayout>
     );
   }
+
+  function handleAdminChecbox(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.checked;
+    setAdmin(val)
+  }
+
   return (
     <div className={"flex justify-center"}>
       <Card
@@ -203,39 +226,40 @@ const CreateUserPage: React.FC = () => {
             type={"text"}
             name={"workPlace"}
           />
+          {isAdmin &&
+            <>
+              <FormControl
+              actionData={{
+                value: actionData?.fields?.password,
+                fieldError: actionData?.fieldErrors?.password
+              }}
+              title={"Пароль"}
+              placeholder={"Пароль"}
+              type={"password"}
+              name={"password"} />
+              <FormControl
+              actionData={{
+                value: actionData?.fields?.password,
+                fieldError: actionData?.fieldErrors?.password
+              }}
+              title={"Повторите пароль"}
+              placeholder={"Пароль"}
+              type={"password"}
+              name={"passwordSimilarity"} />
+            </>
+          }
 
-          <FormControl
-            actionData={{
-              value: actionData?.fields?.password,
-              fieldError: actionData?.fieldErrors?.password,
-            }}
-            title={"Пароль"}
-            placeholder={"Пароль"}
-            type={"password"}
-            name={"password"}
-          />
-
-          <FormControl
-            actionData={{
-              value: actionData?.fields?.password,
-              fieldError: actionData?.fieldErrors?.password,
-            }}
-            title={"Повторите пароль"}
-            placeholder={"Пароль"}
-            type={"password"}
-            name={"passwordSimilarity"}
-          />
-          {loaderData.userRole === "SUPER_ADMIN" && (
+          {loaderData.userRole.role === "SUPER_ADMIN" &&
             <div>
               <div className="divider"></div>
               <div className="form-control">
                 <label className="label cursor-pointer">
                   <span className="label-text">Админ</span>
-                  <input type="checkbox" name={"role"} className="toggle" />
+                  <input type="checkbox" name={"role"} className="toggle" onChange={(e)=>handleAdminChecbox(e)}/>
                 </label>
               </div>
             </div>
-          )}
+          }
           <div className="divider"></div>
           <div id="form-error-message">
             {actionData?.formError ? (
